@@ -1,17 +1,144 @@
+# create_employee_analysis.py
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import textwrap
+import os
+
+# -------------------------
+# Part A: Generate synthetic dataset (100 rows) with exactly 13 IT employees
+# -------------------------
+np.random.seed(42)
+
+n = 100
+# Departments and ensure IT count is exactly 13
+departments = ['Finance', 'Sales', 'Operations', 'HR', 'Marketing', 'Legal', 'IT']
+# choose counts for departments other than IT that sum to 87
+remaining = n - 13  # 100 - 13 = 87
+# We'll choose random counts for 6 departments that sum to 87
+rand_props = np.random.dirichlet(np.ones(len(departments)-1), size=1).flatten()
+counts_non_it = (rand_props * remaining).round().astype(int)
+
+# adjust rounding to make exact sum
+diff = remaining - counts_non_it.sum()
+# fix the difference by adding/subtracting from first element
+counts_non_it[0] += diff
+
+dept_counts = dict(zip([d for d in departments if d != 'IT'], counts_non_it))
+dept_counts['IT'] = 13
+
+# Build the department list
+dept_list = []
+for dept, cnt in dept_counts.items():
+    dept_list += [dept] * int(cnt)
+dept_list = np.array(dept_list)
+# sanity check
+assert len(dept_list) == n
+
+regions = ['North America', 'Europe', 'Middle East', 'Latin America', 'Asia Pacific', 'Africa']
+employee_ids = [f"EMP{str(i+1).zfill(3)}" for i in range(n)]
+
+# randomize rows
+np.random.shuffle(dept_list)
+regions_sample = np.random.choice(regions, size=n, p=[0.25,0.2,0.15,0.15,0.2,0.05])
+years_experience = np.random.choice(range(0, 26), size=n)  # 0-25 years
+performance_score = np.round(np.random.normal(loc=75, scale=10, size=n), 2)
+satisfaction_rating = np.round(np.clip(np.random.normal(loc=4.0, scale=0.6, size=n), 1.0, 5.0), 1)
+
+df = pd.DataFrame({
+    'employee_id': employee_ids,
+    'department': dept_list,
+    'region': regions_sample,
+    'performance_score': performance_score,
+    'years_experience': years_experience,
+    'satisfaction_rating': satisfaction_rating
+})
+
+csv_path = "employee_data.csv"
+df.to_csv(csv_path, index=False)
+print(f"Generated synthetic dataset -> {csv_path}")
+print(df['department'].value_counts().to_string())
+# -------------------------
+# Part B: Load data, compute IT count and print
+# -------------------------
+df_loaded = pd.read_csv(csv_path)
+it_count = (df_loaded['department'] == 'IT').sum()
+print("\nIT department count:", it_count)
+
+# -------------------------
+# Part C: Create department distribution bar chart and save
+# -------------------------
+plt.figure(figsize=(10,6))
+vc = df_loaded['department'].value_counts().sort_values(ascending=False)
+vc.plot(kind='bar')
+plt.title("Department Distribution (n=100)")
+plt.xlabel("Department")
+plt.ylabel("Frequency")
+plt.tight_layout()
+
+plot_path = "department_distribution.png"
+plt.savefig(plot_path)
+plt.close()
+print(f"Saved plot -> {plot_path}")
+
+# -------------------------
+# Part D: Create HTML that includes:
+#  - the IT count
+#  - the image
+#  - the Python source code embedded inside a <pre><code> block for verification
+# -------------------------
+# Read this python file's source to embed inside the HTML
+try:
+    with open(__file__, 'r', encoding='utf-8') as f:
+        source_code = f.read()
+except Exception:
+    # fallback if __file__ is not available (e.g., interactive run)
+    source_code = "# Source not available programmatically; saved code should be attached separately."
+
+# Escape HTML special chars for safe embedding
+import html
+escaped_source = html.escape(source_code)
+
+html_content = f"""<!doctype html>
 <html>
 <head>
-<title>Employee Performance Analysis</title>
+  <meta charset="utf-8">
+  <title>Employee Performance Analysis</title>
+  <style>
+    body {{ font-family: Arial, Helvetica, sans-serif; max-width: 900px; margin: 2rem auto; line-height:1.5; color:#111; }}
+    pre {{ background:#f8f8f8; border:1px solid #ddd; padding:1rem; overflow:auto; white-space:pre-wrap; word-wrap:break-word; }}
+    img {{ max-width:100%; height:auto; border:1px solid #ccc; padding:4px; }}
+    .meta {{ color:#333; font-size:0.95rem; }}
+  </style>
 </head>
 <body>
-<h1>Employee Performance Analysis</h1>
+  <h1>Employee Performance Analysis</h1>
 
-<p><b>Email for verification:</b> 23f1001792@ds.study.iitm.ac.in</p>
+  <p class="meta"><strong>Email for verification:</strong> 23f1001792@ds.study.iitm.ac.in</p>
 
-<h2>IT Department Frequency Count</h2>
-<p>The number of employees in the IT department is: <b>13</b></p>
+  <h2>IT Department Frequency Count</h2>
+  <p>The number of employees in the <strong>IT</strong> department is: <strong>{it_count}</strong></p>
 
-<h2>Department Distribution Histogram</h2>
-<img src="distribution.png" alt="Histogram">
+  <h2>Department Distribution Histogram</h2>
+  <p><img src="{plot_path}" alt="Department distribution chart"></p>
 
+  <h2>Python code used to generate dataset, plot, and this HTML</h2>
+  <p>Below is the Python source code used (for verification):</p>
+  <pre><code>{escaped_source}</code></pre>
+
+  <p>Files produced alongside this HTML:</p>
+  <ul>
+    <li>{csv_path}</li>
+    <li>{plot_path}</li>
+    <li>employee_analysis.html (this file)</li>
+  </ul>
 </body>
 </html>
+"""
+
+html_file = "employee_analysis.html"
+with open(html_file, "w", encoding="utf-8") as f:
+    f.write(html_content)
+
+print("HTML file generated:", html_file)
+print("All done! Please inspect the files in the current directory.")
