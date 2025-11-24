@@ -1,4 +1,29 @@
-# create_employee_analysis.py
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Employee Performance Analysis</title>
+  <style>
+    body { font-family: Arial, Helvetica, sans-serif; max-width: 900px; margin: 2rem auto; line-height:1.5; color:#111; }
+    pre { background:#f8f8f8; border:1px solid #ddd; padding:1rem; overflow:auto; white-space:pre-wrap; word-wrap:break-word; }
+    img { max-width:100%; height:auto; border:1px solid #ccc; padding:4px; }
+    .meta { color:#333; font-size:0.95rem; }
+  </style>
+</head>
+<body>
+  <h1>Employee Performance Analysis</h1>
+
+  <p class="meta"><strong>Email for verification:</strong> 23f1001792@ds.study.iitm.ac.in</p>
+
+  <h2>IT Department Frequency Count</h2>
+  <p>The number of employees in the <strong>IT</strong> department is: <strong>13</strong></p>
+
+  <h2>Department Distribution Histogram</h2>
+  <p><img src="department_distribution.png" alt="Department distribution chart"></p>
+
+  <h2>Python code used to generate dataset, plot, and this HTML</h2>
+  <p>Below is the Python source code used (for verification):</p>
+  <pre><code># create_employee_analysis.py
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -141,4 +166,13 @@ with open(html_file, "w", encoding="utf-8") as f:
     f.write(html_content)
 
 print("HTML file generated:", html_file)
-print("All done! Please inspect the files in the current directory.")
+print("All done! Please inspect the files in the current directory.")</code></pre>
+
+  <p>Files produced alongside this HTML:</p>
+  <ul>
+    <li>employee_data.csv</li>
+    <li>department_distribution.png</li>
+    <li>employee_analysis.html (this file)</li>
+  </ul>
+</body>
+</html>
